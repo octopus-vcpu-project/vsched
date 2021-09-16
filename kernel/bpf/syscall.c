@@ -2327,6 +2327,7 @@ bpf_prog_load_check_attach(enum bpf_prog_type prog_type,
 		case BPF_PROG_TYPE_LSM:
 		case BPF_PROG_TYPE_STRUCT_OPS:
 		case BPF_PROG_TYPE_EXT:
+		case BPF_PROG_TYPE_SCHED:
 			break;
 		default:
 			return -EINVAL;
@@ -2450,6 +2451,7 @@ static bool is_perfmon_prog_type(enum bpf_prog_type prog_type)
 	case BPF_PROG_TYPE_LSM:
 	case BPF_PROG_TYPE_STRUCT_OPS: /* has access to struct sock */
 	case BPF_PROG_TYPE_EXT: /* extends any prog */
+	case BPF_PROG_TYPE_SCHED:
 		return true;
 	default:
 		return false;
@@ -2972,6 +2974,12 @@ static int bpf_tracing_prog_attach(struct bpf_prog *prog,
 			goto out_put_prog;
 		}
 		break;
+	case BPF_PROG_TYPE_SCHED:
+		if (prog->expected_attach_type != BPF_SCHED) {
+			err = -EINVAL;
+			goto out_put_prog;
+		}
+		break;
 	case BPF_PROG_TYPE_EXT:
 		if (prog->expected_attach_type != 0) {
 			err = -EINVAL;
@@ -3043,13 +3051,14 @@ static int bpf_tracing_prog_attach(struct bpf_prog *prog,
 	 */
 	if (!prog->aux->dst_trampoline && !tgt_prog) {
 		/*
-		 * Allow re-attach for TRACING and LSM programs. If it's
+		 * Allow re-attach for TRACING, SCHED and LSM programs. If it's
 		 * currently linked, bpf_trampoline_link_prog will fail.
 		 * EXT programs need to specify tgt_prog_fd, so they
 		 * re-attach in separate code path.
 		 */
 		if (prog->type != BPF_PROG_TYPE_TRACING &&
-		    prog->type != BPF_PROG_TYPE_LSM) {
+		    prog->type != BPF_PROG_TYPE_LSM &&
+		    prog->type != BPF_PROG_TYPE_SCHED) {
 			err = -EINVAL;
 			goto out_unlock;
 		}
@@ -3298,6 +3307,7 @@ static int bpf_raw_tp_link_attach(struct bpf_prog *prog,
 	case BPF_PROG_TYPE_TRACING:
 	case BPF_PROG_TYPE_EXT:
 	case BPF_PROG_TYPE_LSM:
+	case BPF_PROG_TYPE_SCHED:
 		if (user_tp_name)
 			/* The attach point for this category of programs
 			 * should be specified via btf_id during program load.
