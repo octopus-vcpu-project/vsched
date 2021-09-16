@@ -1083,6 +1083,7 @@ const char *bpf_attach_type_input_str(enum bpf_attach_type t)
 	case BPF_MODIFY_RETURN:			return "mod_ret";
 	case BPF_SK_REUSEPORT_SELECT:		return "sk_skb_reuseport_select";
 	case BPF_SK_REUSEPORT_SELECT_OR_MIGRATE:	return "sk_skb_reuseport_select_or_migrate";
+	case BPF_SCHED:				return "sched";
 	default:	return libbpf_bpf_attach_type_str(t);
 	}
 }
