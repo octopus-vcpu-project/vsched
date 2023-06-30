@@ -257,7 +257,9 @@ static __always_inline u64 steal_account_process_time(u64 maxtime)
 		steal = min(steal, maxtime);
 		account_steal_time(steal);
 		this_rq()->prev_steal_time += steal;
-
+		if(steal>0){
+			this_rq()->preemptions += 1;
+		}
 		return steal;
 	}
 #endif

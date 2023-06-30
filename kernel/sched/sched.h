@@ -888,7 +888,8 @@ extern int sched_init_domains(const struct cpumask *cpu_map);
 extern void rq_attach_root(struct rq *rq, struct root_domain *rd);
 extern void sched_get_rd(struct root_domain *rd);
 extern void sched_put_rd(struct root_domain *rd);
-
+/* used to give information to the VCPU prober */
+extern void get_fine_stl_preempts(int cpunum,u64* preempt,u64* steals_time);
 #ifdef HAVE_RT_PUSH_IPI
 extern void rto_push_irq_work_func(struct irq_work *work);
 #endif
@@ -1092,7 +1093,8 @@ struct rq {
 #ifdef CONFIG_PARAVIRT_TIME_ACCOUNTING
 	u64			prev_steal_time_rq;
 #endif
-
+	/* used to hold preemptions */
+	u64			preemptions;
 	/* calc_load related fields */
 	unsigned long		calc_load_update;
 	long			calc_load_active;

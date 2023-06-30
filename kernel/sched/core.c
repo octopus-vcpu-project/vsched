@@ -144,7 +144,11 @@ __read_mostly int sysctl_resched_latency_warn_once = 1;
  * Limited because this is done with IRQs disabled.
  */
 const_debug unsigned int sysctl_sched_nr_migrate = SCHED_NR_MIGRATE_BREAK;
-
+void get_fine_stl_preempts(int cpunum,u64* preempt,u64* steals_time){
+	struct rq *rq = cpu_rq(cpunum);
+	*preempt= rq->preemptions;
+	*steals_time= rq->prev_steal_time;
+}
 __read_mostly int scheduler_running;
 
 #ifdef CONFIG_SCHED_CORE
