@@ -890,6 +890,8 @@ extern void sched_get_rd(struct root_domain *rd);
 extern void sched_put_rd(struct root_domain *rd);
 /* used to give information to the VCPU prober */
 extern void get_fine_stl_preempts(int cpunum,u64* preempt,u64* steals_time);
+extern void get_max_latency(int cpunum,u64* max_latency);
+extern void reset_max_latency(u64 max_latency);
 #ifdef HAVE_RT_PUSH_IPI
 extern void rto_push_irq_work_func(struct irq_work *work);
 #endif
@@ -1095,6 +1097,7 @@ struct rq {
 #endif
 	/* used to hold preemptions */
 	u64			preemptions;
+	u64			max_latency;
 	/* calc_load related fields */
 	unsigned long		calc_load_update;
 	long			calc_load_active;

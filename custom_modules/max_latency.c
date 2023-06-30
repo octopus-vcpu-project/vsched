@@ -17,11 +17,12 @@ MODULE_LICENSE("Dual BSD/GPL");
 MODULE_AUTHOR("Liran B.H");
 static struct proc_dir_entry *ent;
 
-extern void get_fine_stl_preempts(int cpunum,u64* preempt,u64* steals_time);
-
+extern void reset_max_latency(u64 max_latency);
+extern get_max_latency(int cpunum,u64* max_latency);
 static ssize_t mywrite(struct file *file, const char __user *ubuf,size_t count, loff_t *ppos) 
 {
 	printk( KERN_DEBUG "write handler\n");
+    reset_max_latency(0);
 	return -1;
 }
 
@@ -30,19 +31,16 @@ static ssize_t myread(struct file *file, char __user *ubuf,size_t count, loff_t 
     char buf[BUFSIZE];
     int len = 0;
     int cpu;
-    u64 preempt,steals_time;
+    u64 max_latency;
     printk(KERN_DEBUG "read handler\n");
 
     // Iterate over each online CPU
     for_each_online_cpu(cpu) {
-	reallybig_test(cpu,&preempt,&steals_time);
+	get_max_latency(cpu,&max_latency);
 	printk("%d",cpu);
-	printk("%llu",preempt);
-	printk("steals");
-	printk("%llu",steals_time);
+	printk("%llu",max_latency);
         // Call your function for this CPU and append the result to the buffer
-        len += snprintf(buf + len, sizeof(buf) - len, "CPU %d:\n%llu\n%llu\n", cpu, preempt,steals_time);
-
+        len += snprintf(buf + len, sizeof(buf) - len, "CPU %d:\n%llu\n", cpu, max_latency);
         // Check if the buffer is full
         if (len >= sizeof(buf)) {
             // The buffer is full, stop adding more data
@@ -75,7 +73,7 @@ static struct proc_ops myops =
 static int simple_init(void)
 {
 
-	ent=proc_create("preempts",0660,NULL,&myops);
+	ent=proc_create("max_latency",0660,NULL,&myops);
 	return 0;
 }
 

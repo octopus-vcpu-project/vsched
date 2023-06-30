@@ -1,5 +1,6 @@
 ifneq ($(KERNELRELEASE),)
    obj-m := preempt_proc.o
+   obj-m := max_latency.o
 else
 
 KERNELDIR ?= /lib/modules/$(shell uname -r)/build

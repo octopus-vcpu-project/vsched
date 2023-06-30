@@ -149,6 +149,20 @@ void get_fine_stl_preempts(int cpunum,u64* preempt,u64* steals_time){
 	*preempt= rq->preemptions;
 	*steals_time= rq->prev_steal_time;
 }
+
+void get_max_latency(int cpunum,u64* max_latency){
+	struct rq *rq = cpu_rq(cpunum);
+	*max_latency= rq->max_latency;
+}
+
+void reset_max_latency(u64 max_latency){
+	int cpu;
+	for_each_online_cpu(cpu){
+		struct rq *rq = cpu_rq(cpu);
+		rq->max_latency= max_latency;
+	}
+}
+
 __read_mostly int scheduler_running;
 
 #ifdef CONFIG_SCHED_CORE
