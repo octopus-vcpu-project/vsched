@@ -18,7 +18,7 @@ MODULE_AUTHOR("Liran B.H");
 static struct proc_dir_entry *ent;
 
 extern void reset_max_latency(u64 max_latency);
-extern get_max_latency(int cpunum,u64* max_latency);
+extern void get_max_latency(int cpunum,u64* max_latency);
 static ssize_t mywrite(struct file *file, const char __user *ubuf,size_t count, loff_t *ppos) 
 {
 	printk( KERN_DEBUG "write handler\n");
