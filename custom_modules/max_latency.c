@@ -22,8 +22,13 @@ extern void get_max_latency(int cpunum,u64* max_latency);
 static ssize_t mywrite(struct file *file, const char __user *ubuf,size_t count, loff_t *ppos) 
 {
 	printk( KERN_DEBUG "write handler\n");
-    reset_max_latency(0);
+        reset_max_latency(0);
 	return -1;
+}
+
+int procfs_open(struct inode *inode, struct file *file)
+{
+	return 0;
 }
 
 static ssize_t myread(struct file *file, char __user *ubuf,size_t count, loff_t *ppos) 
@@ -68,7 +73,7 @@ static struct proc_ops myops =
 {
 	.proc_read = myread,
 	.proc_write = mywrite,
-	
+	.proc_open = procfs_open
 };
 static int simple_init(void)
 {

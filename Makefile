@@ -2,8 +2,8 @@
 VERSION = 6
 PATCHLEVEL = 1
 SUBLEVEL = 36
-EXTRAVERSION =
-NAME = Curry Ramen
+EXTRAVERSION = vsched
+NAME = vsched
 
 # *DOCUMENTATION*
 # To see a list of typical targets execute "make help"

@@ -1,4 +1,4 @@
-KERNELVER=5.15.108+
+KERNELVER=6.136.vsched+
 MID=$(awk '/Advanced options for Ubuntu/{print $(NF-1)}' /boot/grub/grub.cfg | cut -d\' -f2)
 KID=$(awk "/with Linux $KERNELVER/"'{print $(NF-1)}' /boot/grub/grub.cfg | cut -d\' -f2 | head -n1)
 
