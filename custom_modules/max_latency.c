@@ -34,7 +34,7 @@ static ssize_t mywrite(struct file *file, const char __user *ubuf,size_t count, 
     reset_max_latency(i);
 	c = strlen(buf);
 	*ppos = c;
-	return 0;
+	return c;
 }
 
 int procfs_close(struct inode *inode, struct file *file)
