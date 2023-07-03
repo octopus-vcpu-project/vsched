@@ -76,6 +76,7 @@ static int simple_init(void)
 {
 
 	ent=proc_create("preempts",0660,NULL,&myops);
+    msg=kmalloc(GFP_KERNEL,10*sizeof(char));
 	return 0;
 }
 
