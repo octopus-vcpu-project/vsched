@@ -4,7 +4,7 @@
 #include <linux/kernel.h>   
 #include <linux/proc_fs.h>
 #include <asm/uaccess.h>
-#define BUFSIZE  600
+#define BUFSIZE  9000
 #include <linux/proc_fs.h>
 #include <linux/seq_file.h>
 #include <linux/sched.h>
@@ -21,13 +21,36 @@ extern void reset_max_latency(u64 max_latency);
 extern void get_max_latency(int cpunum,u64* max_latency);
 static ssize_t mywrite(struct file *file, const char __user *ubuf,size_t count, loff_t *ppos) 
 {
-	printk( KERN_DEBUG "write handler\n");
-        reset_max_latency(0);
-	return -1;
+	int num,c,i;
+	char buf[BUFSIZE];
+	if(*ppos > 0 || count > BUFSIZE)
+		return -EFAULT;
+	if(copy_from_user(buf,ubuf,count))
+		return -EFAULT;
+	num = sscanf(buf,"%llu",&i);
+	if(num != 2)
+		return -EFAULT;
+    reset_max_latency(i);
+	c = strlen(buf);
+	*ppos = c;
+	return c;
 }
+
+
+static int module_permission(struct inode *inode, int op, struct nameidata *foo)
+{
+	/* 
+	 * We allow everybody to read from our module, but
+	 * only root (uid 0) may write to it 
+	 */
+
+	return 0;
+}
+
 
 int procfs_open(struct inode *inode, struct file *file)
 {
+    try_module_get(THIS_MODULE);
 	return 0;
 }
 
