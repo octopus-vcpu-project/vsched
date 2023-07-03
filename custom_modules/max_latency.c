@@ -37,11 +37,21 @@ static ssize_t mywrite(struct file *file, const char __user *ubuf,size_t count, 
 	return 0;
 }
 
+static int module_permission(struct inode *inode, int op, struct nameidata *foo)
+{
+	return 0;
+}
 
+int procfs_close(struct inode *inode, struct file *file)
+{
+	module_put(THIS_MODULE);
+	return 0;		/* success */
+}
 
 
 int procfs_open(struct inode *inode, struct file *file)
 {
+    try_module_get(THIS_MODULE);
 	return 0;
 }
 
@@ -87,7 +97,10 @@ static struct proc_ops myops =
 {
 	.proc_read = myread,
 	.proc_write = mywrite,
-	.proc_open = procfs_open
+	.proc_open = procfs_open,
+    .permission = module_permission,
+    .open 	 = procfs_open,
+    .release = procfs_close
 };
 static int simple_init(void)
 {
