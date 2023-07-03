@@ -1,30 +1,14 @@
 ifneq ($(KERNELRELEASE),)
-   obj-m := max_latency.o
+   obj-m := max_latency.o preempt_proc.o
 else
 
 KERNELDIR ?= /lib/modules/$(shell uname -r)/build
-
 
 PWD := $(shell pwd)
 
 default:
 	$(MAKE) -C $(KERNELDIR) M=$(PWD) modules
-endif
+
 clean:
 	$(MAKE) -C $(KERNELDIR) M=$(PWD) clean
-
-
-ifneq ($(KERNELRELEASE),)
-   obj-m := preempt_proc.o
-else
-
-KERNELDIR ?= /lib/modules/$(shell uname -r)/build
-
-
-PWD := $(shell pwd)
-
-default:
-	$(MAKE) -C $(KERNELDIR) M=$(PWD) modules
 endif
-clean:
-	$(MAKE) -C $(KERNELDIR) M=$(PWD) clean
