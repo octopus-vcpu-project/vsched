@@ -42,7 +42,6 @@ static ssize_t mywrite(struct file *file, const char __user *ubuf,size_t count, 
 
 int procfs_open(struct inode *inode, struct file *file)
 {
-    try_module_get(THIS_MODULE);
 	return 0;
 }
 
