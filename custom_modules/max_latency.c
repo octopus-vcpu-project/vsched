@@ -29,7 +29,7 @@ static ssize_t mywrite(struct file *file, const char __user *ubuf,size_t count, 
 	if(copy_from_user(buf,ubuf,count))
 		return -EFAULT;
 	num = sscanf(buf,"%llu",&i);
-	if(num != 2)
+	if(num != 1)
 		return -EFAULT;
     reset_max_latency(i);
 	c = strlen(buf);
