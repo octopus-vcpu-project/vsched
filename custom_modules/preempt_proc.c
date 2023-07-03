@@ -35,7 +35,7 @@ static ssize_t myread(struct file *file, char __user *ubuf,size_t count, loff_t 
 
     // Iterate over each online CPU
     for_each_online_cpu(cpu) {
-	reallybig_test(cpu,&preempt,&steals_time);
+	get_fine_stl_preempts(cpu,&preempt,&steals_time);
 	printk("%d",cpu);
 	printk("%llu",preempt);
 	printk("steals");
