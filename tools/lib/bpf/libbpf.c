@@ -8470,6 +8470,7 @@ static int attach_raw_tp(const struct bpf_program *prog, long cookie, struct bpf
 static int attach_trace(const struct bpf_program *prog, long cookie, struct bpf_link **link);
 static int attach_kprobe_multi(const struct bpf_program *prog, long cookie, struct bpf_link **link);
 static int attach_lsm(const struct bpf_program *prog, long cookie, struct bpf_link **link);
+static int attach_sched(const struct bpf_program *prog, long cookie, struct bpf_link **link);
 static int attach_iter(const struct bpf_program *prog, long cookie, struct bpf_link **link);
 
 static const struct bpf_sec_def section_defs[] = {
@@ -8504,6 +8505,7 @@ static const struct bpf_sec_def section_defs[] = {
 	SEC_DEF("fmod_ret.s+",		TRACING, BPF_MODIFY_RETURN, SEC_ATTACH_BTF | SEC_SLEEPABLE, attach_trace),
 	SEC_DEF("fexit.s+",		TRACING, BPF_TRACE_FEXIT, SEC_ATTACH_BTF | SEC_SLEEPABLE, attach_trace),
 	SEC_DEF("freplace+",		EXT, 0, SEC_ATTACH_BTF, attach_trace),
+	SEC_DEF("sched",		SCHED, BPF_SCHED, SEC_ATTACH_BTF, attach_sched),
 	SEC_DEF("lsm+",			LSM, BPF_LSM_MAC, SEC_ATTACH_BTF, attach_lsm),
 	SEC_DEF("lsm.s+",		LSM, BPF_LSM_MAC, SEC_ATTACH_BTF | SEC_SLEEPABLE, attach_lsm),
 	SEC_DEF("lsm_cgroup+",		LSM, BPF_LSM_CGROUP, SEC_ATTACH_BTF),
@@ -8932,6 +8934,7 @@ static int bpf_object__collect_st_ops_relos(struct bpf_object *obj,
 
 #define BTF_TRACE_PREFIX "btf_trace_"
 #define BTF_LSM_PREFIX "bpf_lsm_"
+#define BTF_SCHED_PREFIX "bpf_sched_"
 #define BTF_ITER_PREFIX "bpf_iter_"
 #define BTF_MAX_NAME_SIZE 128
 
@@ -8946,6 +8949,10 @@ void btf_get_kernel_prefix_kind(enum bpf_attach_type attach_type,
 	case BPF_LSM_MAC:
 	case BPF_LSM_CGROUP:
 		*prefix = BTF_LSM_PREFIX;
+		*kind = BTF_KIND_FUNC;
+		break;
+	case BPF_SCHED:
+		*prefix = BTF_SCHED_PREFIX;
 		*kind = BTF_KIND_FUNC;
 		break;
 	case BPF_TRACE_ITER:
@@ -11239,6 +11246,11 @@ struct bpf_link *bpf_program__attach_lsm(const struct bpf_program *prog)
 	return bpf_program__attach_btf_id(prog, NULL);
 }
 
+struct bpf_link *bpf_program__attach_sched(const struct bpf_program *prog)
+{
+	return bpf_program__attach_btf_id(prog, NULL);
+}
+
 static int attach_trace(const struct bpf_program *prog, long cookie, struct bpf_link **link)
 {
 	*link = bpf_program__attach_trace(prog);
@@ -11249,6 +11261,12 @@ static int attach_lsm(const struct bpf_program *prog, long cookie, struct bpf_li
 {
 	*link = bpf_program__attach_lsm(prog);
 	return libbpf_get_error(*link);
+}
+
+static int attach_sched(const struct bpf_program *prog, long cookie, struct bpf_link **link)
+{
+        *link = bpf_program__attach_sched(prog);
+        return libbpf_get_error(*link);
 }
 
 static struct bpf_link *
