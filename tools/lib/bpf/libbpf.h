@@ -648,7 +648,7 @@ LIBBPF_API struct bpf_link *
 bpf_program__attach_freplace(const struct bpf_program *prog,
 			     int target_fd, const char *attach_func_name);
 LIBBPF_API struct bpf_link *
-bpf_program__attach_sched(struct bpf_program *prog);
+bpf_program__attach_sched(const struct bpf_program *prog);
 
 struct bpf_map;
 

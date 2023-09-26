@@ -731,7 +731,7 @@ class PrinterHelpers(Printer):
             'struct socket',
             'struct file',
             'struct bpf_timer',
-            'struct sched_entity'
+            'struct sched_entity',
             'struct mptcp_sock',
             'struct bpf_dynptr',
             'struct iphdr',

@@ -1009,6 +1009,7 @@ enum bpf_attach_type {
 	BPF_TRACE_FENTRY,
 	BPF_TRACE_FEXIT,
 	BPF_MODIFY_RETURN,
+	BPF_SCHED,
 	BPF_LSM_MAC,
 	BPF_TRACE_ITER,
 	BPF_CGROUP_INET4_GETPEERNAME,
@@ -3985,8 +3986,6 @@ union bpf_attr {
  *
  *		**-ENOENT** if architecture does not support branch records.
  *
- *
- *
  * u64 bpf_sched_entity_to_tgidpid(struct sched_entity *se)
  *	Description
  *		Return task's encoded tgid and pid if the sched entity is a task.
@@ -4006,6 +4005,7 @@ union bpf_attr {
  *		to be enabled.
  *	Return
  *		1 if the sched entity belongs to a cgroup, 0 otherwise.
+ *
  * long bpf_get_ns_current_pid_tgid(u64 dev, u64 ino, struct bpf_pidns_info *nsdata, u32 size)
  *	Description
  *		Returns 0 on success, values for *pid* and *tgid* as seen from the current
@@ -5579,6 +5579,9 @@ union bpf_attr {
 	FN(send_signal_thread),		\
 	FN(jiffies64),			\
 	FN(read_branch_records),	\
+        FN(sched_entity_to_tgidpid),    \
+        FN(sched_entity_to_cgrpid),     \
+        FN(sched_entity_belongs_to_cgrp),       \
 	FN(get_ns_current_pid_tgid),	\
 	FN(xdp_output),			\
 	FN(get_netns_cookie),		\
@@ -5669,9 +5672,6 @@ union bpf_attr {
 	FN(tcp_raw_check_syncookie_ipv6),	\
 	FN(ktime_get_tai_ns),		\
 	FN(user_ringbuf_drain),		\
-	FN(sched_entity_to_tgidpid),	\
-	FN(sched_entity_to_cgrpid),	\
-	FN(sched_entity_belongs_to_cgrp),	\
 	/* */
 
 /* integer value in 'imm' field of BPF_CALL instruction selects which helper

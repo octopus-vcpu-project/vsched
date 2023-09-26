@@ -5579,6 +5579,9 @@ union bpf_attr {
 	FN(send_signal_thread),		\
 	FN(jiffies64),			\
 	FN(read_branch_records),	\
+ 	FN(sched_entity_to_tgidpid),	\
+	FN(sched_entity_to_cgrpid),	\
+	FN(sched_entity_belongs_to_cgrp),	\
 	FN(get_ns_current_pid_tgid),	\
 	FN(xdp_output),			\
 	FN(get_netns_cookie),		\
@@ -5636,9 +5639,6 @@ union bpf_attr {
 	FN(get_attach_cookie),		\
 	FN(task_pt_regs),		\
 	FN(get_branch_snapshot),	\
- 	FN(sched_entity_to_tgidpid),	\
-	FN(sched_entity_to_cgrpid),	\
-	FN(sched_entity_belongs_to_cgrp),	\
 	FN(trace_vprintk),		\
 	FN(skc_to_unix_sock),		\
 	FN(kallsyms_lookup_name),	\
