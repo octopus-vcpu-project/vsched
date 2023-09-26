@@ -199,6 +199,7 @@ static const char * const prog_type_name[] = {
 	[BPF_PROG_TYPE_LSM]			= "lsm",
 	[BPF_PROG_TYPE_SK_LOOKUP]		= "sk_lookup",
 	[BPF_PROG_TYPE_SYSCALL]			= "syscall",
+	[BPF_PROG_TYPE_SCHED]			= "sched",
 };
 
 static int __base_pr(enum libbpf_print_level level, const char *format,
@@ -2950,7 +2951,8 @@ static int bpf_object__finalize_btf(struct bpf_object *obj)
 static bool prog_needs_vmlinux_btf(struct bpf_program *prog)
 {
 	if (prog->type == BPF_PROG_TYPE_STRUCT_OPS ||
-	    prog->type == BPF_PROG_TYPE_LSM)
+		  prog->type == BPF_PROG_TYPE_LSM ||
+	    prog->type == BPF_PROG_TYPE_SCHED)
 		return true;
 
 	/* BPF_PROG_TYPE_TRACING programs which do not attach to other programs
