@@ -6,6 +6,8 @@
 
 #ifdef CONFIG_BPF_SYSCALL
 
+#include <linux/jump_label.h>
+
 #define BPF_SCHED_HOOK(RET, DEFAULT, NAME, ...) \
 	RET bpf_sched_##NAME(__VA_ARGS__);
 #include <linux/sched_hook_defs.h>
