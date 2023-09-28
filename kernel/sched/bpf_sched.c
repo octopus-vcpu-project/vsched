@@ -80,7 +80,7 @@ BPF_CALL_2(bpf_sched_entity_belongs_to_cgrp, struct sched_entity *, se,
 #endif
 
 	for (level = cgrp->level; level; level--)
-		if (cgrp->ancestors[level] == cgrpid)
+		if (cgrp->ancestors[level]->self.id == cgrpid)
 			return 1;
 #endif
 	return 0;

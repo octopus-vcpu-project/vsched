@@ -106,6 +106,7 @@ static const char * const attach_type_name[] = {
 	[BPF_TRACE_FEXIT]		= "trace_fexit",
 	[BPF_MODIFY_RETURN]		= "modify_return",
 	[BPF_LSM_MAC]			= "lsm_mac",
+	[BPF_SCHED]			= "sched",
 	[BPF_LSM_CGROUP]		= "lsm_cgroup",
 	[BPF_SK_LOOKUP]			= "sk_lookup",
 	[BPF_TRACE_ITER]		= "trace_iter",
@@ -8505,7 +8506,7 @@ static const struct bpf_sec_def section_defs[] = {
 	SEC_DEF("fmod_ret.s+",		TRACING, BPF_MODIFY_RETURN, SEC_ATTACH_BTF | SEC_SLEEPABLE, attach_trace),
 	SEC_DEF("fexit.s+",		TRACING, BPF_TRACE_FEXIT, SEC_ATTACH_BTF | SEC_SLEEPABLE, attach_trace),
 	SEC_DEF("freplace+",		EXT, 0, SEC_ATTACH_BTF, attach_trace),
-	SEC_DEF("sched",		SCHED, BPF_SCHED, SEC_ATTACH_BTF, attach_sched),
+	SEC_DEF("sched+",		SCHED, BPF_SCHED, SEC_ATTACH_BTF, attach_sched),
 	SEC_DEF("lsm+",			LSM, BPF_LSM_MAC, SEC_ATTACH_BTF, attach_lsm),
 	SEC_DEF("lsm.s+",		LSM, BPF_LSM_MAC, SEC_ATTACH_BTF | SEC_SLEEPABLE, attach_lsm),
 	SEC_DEF("lsm_cgroup+",		LSM, BPF_LSM_CGROUP, SEC_ATTACH_BTF),
@@ -8934,8 +8935,9 @@ static int bpf_object__collect_st_ops_relos(struct bpf_object *obj,
 
 #define BTF_TRACE_PREFIX "btf_trace_"
 #define BTF_LSM_PREFIX "bpf_lsm_"
-#define BTF_SCHED_PREFIX "bpf_sched_"
 #define BTF_ITER_PREFIX "bpf_iter_"
+#define BTF_SCHED_PREFIX "bpf_sched_"
+#define BTF_ITBPF_LSM_MACER_PREFIX "bpf_iter_"
 #define BTF_MAX_NAME_SIZE 128
 
 void btf_get_kernel_prefix_kind(enum bpf_attach_type attach_type,
