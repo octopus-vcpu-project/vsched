@@ -2,8 +2,8 @@
 VERSION = 6
 PATCHLEVEL = 1
 SUBLEVEL = 36
-EXTRAVERSION = CFS_BPF
-NAME = CFS_BPF 
+EXTRAVERSION = BPF
+NAME = BPF 
 
 # *DOCUMENTATION*
 # To see a list of typical targets execute "make help"

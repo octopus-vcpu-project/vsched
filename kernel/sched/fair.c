@@ -7666,12 +7666,14 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p, int wake_
 
 
 	if (bpf_sched_enabled()) {
-		int ret = bpf_sched_cfs_check_preempt_wakeup(current, p);
+		/*
+		int ret = bpf_sched_cfs_check_preempt_wakeup(curr, p);
 
 		if (ret < 0)
 			return;
 		else if (ret > 0)
 			goto preempt;
+			*/
 	}
 
 
@@ -8911,6 +8913,14 @@ static void update_cpu_capacity(struct sched_domain *sd, int cpu)
 	unsigned long capacity = scale_rt_capacity(cpu);
 	struct sched_group *sdg = sd->groups;
 	struct rq *rq = cpu_rq(cpu);
+
+	if (bpf_sched_enabled()) {
+                int ret = bpf_sched_cfs_vcpu_capacity();
+
+                if(ret > 0)
+                        capacity = (unsigned long) ret;
+        }
+
 
 	rq->cpu_capacity_orig = capacity_orig;
 

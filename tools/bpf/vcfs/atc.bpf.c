@@ -58,7 +58,6 @@ int BPF_PROG(wakeup, struct task_struct *curr, struct task_struct *p)
 			debug("wakeup ret %d", ret);
 		}
 	}
-
 	return ret;
 }
 
@@ -72,7 +71,6 @@ int BPF_PROG(preempt_entity, struct sched_entity *curr, struct sched_entity *se)
 
 	if (curr == NULL || se == NULL)
 		return 0;
-
 	/* pid/tgid mode */
 	if (tgidpid) {
 		unsigned long tgidpid1, tgidpid2;
@@ -145,4 +143,11 @@ int BPF_PROG(tick, struct sched_entity *curr, unsigned long delta_exec)
 	}
 
 	return ret;
+}
+
+
+SEC("sched/cfs_vcpu_capacity")
+int BPF_PROG(capacity)
+{
+	return 999;
 }

@@ -4,7 +4,6 @@
 #include <linux/bpf_verifier.h>
 #include <linux/bpf_sched.h>
 #include <linux/btf_ids.h>
-#include <linux/sched.h>
 #include "sched.h"
 
 DEFINE_STATIC_KEY_FALSE(bpf_sched_enabled_key);
@@ -12,7 +11,7 @@ DEFINE_STATIC_KEY_FALSE(bpf_sched_enabled_key);
 /*
  * For every hook declare a nop function where a BPF program can be attached.
  */
-#define BPF_SCHED_HOOK(RET, DEFAULT, NAME, ...)	\
+#define BPF_SCHED_HOOK(RET, DEFAULT, NAME, ...)		\
 noinline RET bpf_sched_##NAME(__VA_ARGS__)	\
 {						\
 	return DEFAULT;				\
@@ -86,14 +85,14 @@ BPF_CALL_2(bpf_sched_entity_belongs_to_cgrp, struct sched_entity *, se,
 	return 0;
 }
 
-BTF_ID_LIST_SINGLE(bpf_get_sched_entity_ids, struct, sched_entity)
+BTF_ID_LIST_SINGLE(bpf_sched_entity_ids, struct, sched_entity)
 
 static const struct bpf_func_proto bpf_sched_entity_to_tgidpid_proto = {
 	.func		= bpf_sched_entity_to_tgidpid,
 	.gpl_only	= false,
 	.ret_type	= RET_INTEGER,
 	.arg1_type	= ARG_PTR_TO_BTF_ID,
-	.arg1_btf_id	= &bpf_get_sched_entity_ids[0],
+	.arg1_btf_id	= &bpf_sched_entity_ids[0],
 };
 
 static const struct bpf_func_proto bpf_sched_entity_to_cgrpid_proto = {
@@ -101,7 +100,7 @@ static const struct bpf_func_proto bpf_sched_entity_to_cgrpid_proto = {
 	.gpl_only	= false,
 	.ret_type	= RET_INTEGER,
 	.arg1_type	= ARG_PTR_TO_BTF_ID,
-	.arg1_btf_id	= &bpf_get_sched_entity_ids[0],
+	.arg1_btf_id	= &bpf_sched_entity_ids[0],
 };
 
 static const struct bpf_func_proto bpf_sched_entity_belongs_to_cgrp_proto = {
@@ -109,7 +108,7 @@ static const struct bpf_func_proto bpf_sched_entity_belongs_to_cgrp_proto = {
 	.gpl_only	= false,
 	.ret_type	= RET_INTEGER,
 	.arg1_type	= ARG_PTR_TO_BTF_ID,
-	.arg1_btf_id	= &bpf_get_sched_entity_ids[0],
+	.arg1_btf_id	= &bpf_sched_entity_ids[0],
 	.arg2_type	= ARG_ANYTHING,
 };
 
