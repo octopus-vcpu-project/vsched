@@ -4,41 +4,40 @@
 #include <bpf/bpf_core_read.h>
 #include <bpf/bpf_helpers.h>
 #include <bpf/bpf_tracing.h>
-//#include "compat.bpf.h"
+#include "cpucfscapacity.h"
 
-struct event {
-	int cpu;
-	int capacity;
-};
+/* BPF perfbuf map */
+struct {
+        __uint(type, BPF_MAP_TYPE_PERF_EVENT_ARRAY);
+        __uint(key_size, sizeof(u32));
+        __uint(value_size, sizeof(u32));
+} events SEC(".maps");
 
+/*
 SEC("raw_tracepoint/sched_cpu_capacity_tp")
 int BPF_PROG(cpu_capacity, struct rq *rq)
 {
 	bpf_printk("capacity is %d\n", BPF_CORE_READ(rq, cpu_capacity));
 	struct event *eventp;
 
-	/*
-	 * send data from kernel to user space
-	 *
-	 */
-	/*
-	eventp = reserve_buf(sizeof(*eventp));
-	if (!eventp)
-			return 0;
-
- 		eventp->capacity = BPF_CORE_READ(rq, cpu_capacity);
-		eventp->cpu = bpf_get_smp_processor_id();
-	eventp->capacity = 10;
-	eventp->cpu = 20;
-	if (argp->src)
-		bpf_probe_read_user_str(eventp->src, sizeof(eventp->src), argp->src);
-	else
-		eventp->src[0] = '\0';
-
-	submit_buf(ctx, eventp, sizeof(*eventp));
-	*/
-
 	return 0;
 }
+*/
+
+SEC("raw_tracepoint/sched_cpu_capacity_tp")
+int BPF_PROG(cpu_capacity, struct rq *rq)
+{
+
+        struct event event = {};
+
+        event.pid = bpf_get_current_pid_tgid() >> 32;
+	event.cpu = bpf_get_smp_processor_id();
+        event.capacity = BPF_CORE_READ(rq, cpu_capacity);
+        bpf_get_current_comm(&event.task, sizeof(event.task));
+
+        bpf_perf_event_output(ctx, &events, BPF_F_CURRENT_CPU, &event, sizeof(event));
+        return 0;
+}
+
 
 char LICENSE[] SEC("license") = "GPL";

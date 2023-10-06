@@ -7,6 +7,7 @@
 #include <time.h>
 #include <bpf/libbpf.h>
 #include <bpf/bpf.h>
+#include "cpucfscapacity.h"
 #include "cpucfscapacity.skel.h"
 //#include "trace_helpers.h"
 //#include "compat.h"
@@ -39,6 +40,24 @@ static const struct argp_option opts[] = {
 	{ NULL, 'h', NULL, OPTION_HIDDEN, "Show the full help" },
 	{},
 };
+
+void handle_event(void *ctx, int cpu, void *data, __u32 data_sz)
+{
+        const struct event *e = data;
+        struct tm *tm;
+        char ts[32];
+        time_t t;
+
+        time(&t);
+        tm = localtime(&t);
+        strftime(ts, sizeof(ts), "%H:%M:%S", tm);
+        printf("%-8s capacity: %4d cpu: %2d pid: %-7d task: %-16s\n", ts, e->capacity, e->cpu, e->pid, e->task);
+}
+
+void handle_lost_events(void *ctx, int cpu, __u64 lost_cnt)
+{
+        printf("Lost %llu events on CPU #%d!\n", lost_cnt, cpu);
+}
 
 static error_t parse_arg(int key, char *arg, struct argp_state *state)
 {
@@ -98,7 +117,7 @@ int main(int argc, char **argv)
 		.doc = argp_program_doc,
 	};
 	struct cpucfscapacity_bpf *obj;
-	struct bpf_buffer *buf = NULL;
+	struct perf_buffer *pb = NULL;
 	int err;
 
 	err = argp_parse(&argp, argc, argv, 0, NULL, NULL);
@@ -134,21 +153,36 @@ int main(int argc, char **argv)
 
 	signal(SIGINT, sig_handler);
 
+	/* Set up ring buffer polling */
+	pb = perf_buffer__new(bpf_map__fd(obj->maps.events), 64,
+                              handle_event, handle_lost_events, NULL, NULL);
+        if (!pb) {
+                err = -errno;
+                fprintf(stderr, "failed to open perf buffer: %d\n", err);
+                goto cleanup;
+        }
+
 	printf("updated cfs capacity........\n");
 	while (1) {
 		if(exiting) break;
 
-		//err = bpf_buffer__poll(buf, POLL_TIMEOUT_MS);
-		if (err < 0 && err != -EINTR) {
-			fprintf(stderr, "error polling ring/perf buffer: %s\n", strerror(-err));
-			goto cleanup;
-		}
+		err = perf_buffer__poll(pb, 100 /* timeout, ms */);
+                /* Ctrl-C will cause -EINTR */
+                if (err == -EINTR) {
+                        err = 0;
+                        break;
+                }
+                if (err < 0) {
+                        printf("Error polling perf buffer: %d\n", err);
+                        break;
+                }
+
 		/* reset err to return 0 if exiting */
-		sleep(1);
 		err = 0;
 	}
 
 cleanup:
+	perf_buffer__free(pb);
 	cpucfscapacity_bpf__destroy(obj);
 	return err != 0;
 }

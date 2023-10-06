@@ -6,9 +6,9 @@ LIBBPF=$(TREE)/tools/lib/bpf/libbpf.a
 INCLUDES := -I$(TREE)/tools/include/uapi -I$(TREE)/tools/lib/ -I$(TREE)/tools/bpf/bpftool/ -I.
 ARCH := $(shell uname -m | sed 's/x86_64/x86/')
 
-all: cpucfscapacity 
+all: atc
 
-cpucfscapacity: cpucfscapacity.c cpucfscapacity.skel.h
+atc: atc.c atc.skel.h
 	gcc -Wall -g  $(INCLUDES) $< -o $@ $(LIBBPF) -lelf -lz
 
 %.bpf.o: %.bpf.c
@@ -19,4 +19,4 @@ cpucfscapacity: cpucfscapacity.c cpucfscapacity.skel.h
 	$(BPFTOOL) gen skeleton $< > $@
 
 clean:
-	rm -f *.o cpucfscapacity *.skel.h
+	rm -f *.o atc *.skel.h
