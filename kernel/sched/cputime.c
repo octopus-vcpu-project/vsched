@@ -269,6 +269,24 @@ static __always_inline u64 steal_account_process_time(u64 maxtime)
 	return 0;
 }
 
+
+int is_cpu_preempted(int cpunum)
+{
+#ifdef CONFIG_PARAVIRT
+        if (static_key_false(&paravirt_steal_enabled)) {
+                u64 steal;
+                steal = paravirt_steal_clock(cpunum);
+                steal -= this_rq()->prev_steal_time;
+                if(steal>0){
+                	return 1;
+		}
+        }
+#endif
+        return 0;
+}
+
+EXPORT_SYMBOL(is_cpu_preempted);
+
 /*
  * Account how much elapsed time was spent in steal, irq, or softirq time.
  */
