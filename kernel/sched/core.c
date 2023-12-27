@@ -162,6 +162,14 @@ void reset_max_latency(u64 max_latency){
 		rq->max_latency= max_latency;
 	}
 }
+
+void set_custom_capacity(unsigned long custom_capacity, int cpu) {
+        struct rq *rq = cpu_rq(cpu);
+        rq->cpu_capacity_custom = custom_capacity;
+}
+
+EXPORT_SYMBOL(set_custom_capacity);
+
 EXPORT_SYMBOL(get_fine_stl_preempts);
 EXPORT_SYMBOL(get_max_latency);
 EXPORT_SYMBOL(reset_max_latency);

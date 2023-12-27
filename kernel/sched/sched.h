@@ -888,6 +888,7 @@ extern int sched_init_domains(const struct cpumask *cpu_map);
 extern void rq_attach_root(struct rq *rq, struct root_domain *rd);
 extern void sched_get_rd(struct root_domain *rd);
 extern void sched_put_rd(struct root_domain *rd);
+extern void set_custom_capacity(unsigned long custom_capacity,int cpu);
 /* used to give information to the VCPU prober */
 extern void get_fine_stl_preempts(int cpunum,u64* preempt,u64* steals_time);
 extern void get_max_latency(int cpunum,u64* max_latency);
@@ -1043,6 +1044,7 @@ struct rq {
 	struct sched_domain __rcu	*sd;
 
 	unsigned long		cpu_capacity;
+	unsigned long 		cpu_capacity_custom;
 	unsigned long		cpu_capacity_orig;
 	unsigned long		cpu_capacity_inverted;
 

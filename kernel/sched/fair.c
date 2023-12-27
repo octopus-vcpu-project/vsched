@@ -8881,7 +8881,9 @@ static void update_cpu_capacity(struct sched_domain *sd, int cpu)
 		capacity = 1;
 
 	rq->cpu_capacity = capacity;
-
+	if(rq->cpu_capacity_custom > 0) {
+                rq->cpu_capacity = rq->cpu_capacity_custom;
+        }
 	/*
 	 * Detect if the performance domain is in capacity inversion state.
 	 *

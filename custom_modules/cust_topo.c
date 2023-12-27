@@ -15,32 +15,60 @@
 #include <linux/device.h>
 #include <linux/of.h>
 #include <linux/slab.h>
+
 #include <linux/init.h>
 #include <linux/rcupdate.h>
 #include <linux/sched.h>
 #define PROCFS_NAME "edit_topology"
-#define BUFFER_SIZE 5096
+#define BUFFER_SIZE 4096
 #define NR_CPUS 32
 
 static struct proc_dir_entry *topology_proc;
 extern cpumask_var_t cpu_l2c_shared_map;
 extern void set_l2c_shared_mask(int cpu,struct cpumask new_mask);
 extern void set_llc_shared_mask(int cpu,struct cpumask new_mask);
+struct cpumask cpuset_array[NR_CPUS];
+EXPORT_SYMBOL(cpuset_array);
+static int test_integer = 3;
 
-const struct cpumask *grapperFunction(int cpu) {
+void iterate_cpus(const struct cpumask *mask) {
+    int cpu;
+    printk(KERN_INFO "ITERATING");
+    // Iterate through the set CPUs in the mask
+    for_each_cpu(cpu, mask) {
+        // Do something with the CPU index (cpu)
+        printk(KERN_INFO "CPU %d is set in the mask\n", cpu);
+    }
+}
+
+void mass_iterate(struct sched_domain_topology_level *topology) {
+	int level=0;
+	while(topology[level].mask != NULL){
+		printk("Name: %s", topology[level].name);
+		printk("Level: %d",level);
+		printk("Mask Address %p",topology[level].mask);
+		for(int z=0;z<NR_CPUS;z++) {
+			printk("    Return cMask Address %p,Cpu %d",topology[level].mask(z),z);
+			int cpu;
+			for_each_cpu(cpu,topology[level].mask(z)){
+				printk(KERN_INFO "CPU %d is set in the mask\n", cpu);
+			}
+		}
+		printk("\n");
+		level++;
+	}
+}
+
+const struct cpumask *stackingMask(int cpu) {
     static cpumask_t mask;
-
-    // Clear all bits in the mask
+    //printk(KERN_INFO "test", test_integer);
+    //iterate_cpus(&cpuset_array[index]);
     cpumask_clear(&mask);
+    cpumask_copy(&mask,&cpuset_array[cpu]);
 
     // Set only the specified CPU bit
     if (cpu >= 0 && cpu < nr_cpu_ids) {
         cpumask_set_cpu(cpu, &mask);
-	if(cpu%2==1){
-		cpumask_set_cpu(cpu-1,&mask);
-	}else{
-		cpumask_set_cpu(cpu+1,&mask);
-	}
     }
 
     return &mask;
@@ -49,23 +77,40 @@ const struct cpumask *grapperFunction(int cpu) {
 
 
 
-typedef const struct cpumask *(*resFunc)(int);
 
-resFunc wrapperFunction(cpumask_t** masklist) {
-	const cpumask_t* index_function(int index) {
-		return masklist[index];
-	}
-	return index_function;
+
+
+struct sched_domain_topology_level *get_list_with_starting_stacking(struct sched_domain_topology_level *topology) {
+    int size = 1;
+    while (topology[size].mask != NULL) size++;  
+
+    //cpuset_array = kmalloc(NR_CPUS * sizeof(struct cpumask), GFP_KERNEL);
+    if(cpuset_array == NULL){
+         printk("ABORT");
+	 return NULL;
+    }
+    for (int i = 0; i < NR_CPUS; i++) {
+        cpumask_clear(&cpuset_array[i]);
+    }
+    struct sched_domain_topology_level *new_top = kmalloc((size + 1) * sizeof(struct sched_domain_topology_level), GFP_KERNEL);
+    if (new_top == NULL) {
+        // Handle allocation failure
+	printk("WARNING,WARING");
+        return NULL;
+    }
+    //Initialize the first element
+    new_top[0] = topology[0];
+//    new_top[0].sd_flags =  SD_SHARE_CPUCAPACITY | SD_SHARE_PKG_RESOURCES;
+    new_top[0].name=kmalloc(strlen("STK")+1,GFP_KERNEL);
+    new_top[0].name="STK";
+
+    // Copy the old elements, shifted by one
+    for (int i = 0; i < size; i++) {
+        new_top[i+1] = topology[i];
+    }
+
+    return new_top;
 }
-
-
-
-cpumask_t *str = NULL;
-
-union {
-  cpumask_t *mutable_field_p;
-  const cpumask_t *const_field_p;
-} u;
 
 
 
@@ -77,32 +122,35 @@ void my_custom_function(char *data) {
         printk(KERN_INFO "Data received: %s\n", data);
 	cpumask_t use_cpumask;
 	cpumask_clear(&use_cpumask);
-	cpumask_t* cpu_mask_list[NR_CPUS];
-	for (int i = 0; i < NR_CPUS; i++) {
-	    cpu_mask_list[i] = kmalloc(sizeof(cpumask_t), GFP_KERNEL);
-            cpumask_clear(cpu_mask_list[i]);
-        }
-	//resFunc res_func_list[5];
-	resFunc* test_func = kmalloc(sizeof(test_func), GFP_KERNEL);;
-	int cpu=0;
-        //NOTE: 0 =SMT 1=CLUSTER 2=NUMA 3=COMPUTER
+	if(strcmp(topology[0].name,"SMT")==0){
+		topology = get_list_with_starting_stacking(topology);
+	}
+	topology[0].mask = stackingMask;
         int sched_domain=0;
+
 	int comp_cpu=0;
+
+	int cpu=0;
+
 	char currentChar = *data;
+
         while(*data != '\0') {
             currentChar = *data;
-	    printk(KERN_INFO "Characsster: %c\n", currentChar);
             if(currentChar == ';') {
 		if(sched_domain==0){
-			cpumask_copy(topology[1].mask(cpu),&use_cpumask);
+			cpumask_copy(&cpuset_array[cpu],&use_cpumask);
+		}else{
+			if(sched_domain==1){
+				cpumask_copy(topology[2].mask(cpu),&use_cpumask);
+			}
+			cpumask_copy(topology[sched_domain].mask(cpu),&use_cpumask);
 		}
-		cpumask_copy(topology[sched_domain].mask(cpu),&use_cpumask);
 		cpumask_clear(&use_cpumask);
 		cpu++;
                 comp_cpu=0;
             }else if(currentChar == ':') {
 		sched_domain++;
-		if(sched_domain==1){
+		if(sched_domain==2){
 			sched_domain++;
 		}
                 comp_cpu=0;
@@ -115,7 +163,6 @@ void my_custom_function(char *data) {
             }
 	    data++;
         }
-	int cpus;
         set_live_topology(topology);
     } else {
         printk(KERN_WARNING "Failed to retrieve Scheduling Domain Topology.\n");
@@ -124,7 +171,8 @@ void my_custom_function(char *data) {
 
 static ssize_t procfile_read(struct file *file, char __user *ubuf,size_t count, loff_t *ppos)
 {
-        printk( KERN_DEBUG "read handler\n");
+        //iterate_cpus(get_cpuset(0));
+	printk( KERN_DEBUG "read handler\n");
         return -1;
 }
 
@@ -145,7 +193,7 @@ ssize_t procfile_write(struct file *file, const char __user *buffer, size_t coun
     // For now, it's just passed as a string
     my_custom_function(procfs_buffer);
 
-    kfree(procfs_buffer);
+    //kfree(procfs_buffer);
     return count;
 }
 
