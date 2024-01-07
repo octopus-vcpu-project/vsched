@@ -258,7 +258,7 @@ static __always_inline u64 steal_account_process_time(u64 maxtime)
 		this_rq()->prev_steal_time += steal;
 		if(steal>0){
 			u64 now = sched_clock();
-			this_rq()->last_active_time = now-this_rq->last_preemption-steal;
+			this_rq()->last_active_time = now-this_rq()->last_preemption-steal;
 			this_rq()->last_preemption = now;
 			this_rq()->preemptions += 1;
 			if(this_rq()->max_latency<steal){
