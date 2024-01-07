@@ -1017,6 +1017,8 @@ struct rq {
 
 	unsigned int		clock_update_flags;
 	u64			clock;
+	u64			clock_preempt;
+	u64			clock_preempt_prev;
 	/* Ensure that all clocks are in the same cache line */
 	u64			clock_task ____cacheline_aligned;
 	u64			clock_pelt;
@@ -1097,6 +1099,8 @@ struct rq {
 #ifdef CONFIG_PARAVIRT_TIME_ACCOUNTING
 	u64			prev_steal_time_rq;
 #endif
+	u64			last_active_time;
+	u64			last_preemption;
 	/* used to hold preemptions */
 	u64			preemptions;
 	u64			max_latency;
