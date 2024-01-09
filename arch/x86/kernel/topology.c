@@ -96,6 +96,7 @@ static int __init debug_hotplug_cpu(void)
 late_initcall_sync(debug_hotplug_cpu);
 #endif /* CONFIG_DEBUG_HOTPLUG_CPU0 */
 
+
 void set_device_topology(int num,int logical_proc_id,int phys_proc_id,int logical_die_id,int cpu_die_id,int cpu_core_id)
 {
 	cpu_data(num).logical_proc_id = logical_proc_id;

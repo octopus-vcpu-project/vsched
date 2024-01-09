@@ -55,6 +55,7 @@
 #include "sched.h"
 #include "stats.h"
 #include "autogroup.h"
+#include <linux/bpf_sched.h>
 
 /*
  * Targeted preemption latency for CPU-bound tasks:
@@ -4957,6 +4958,17 @@ check_preempt_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr)
 
 	ideal_runtime = sched_slice(cfs_rq, curr);
 	delta_exec = curr->sum_exec_runtime - curr->prev_sum_exec_runtime;
+
+	if (bpf_sched_enabled()) {
+		int ret = bpf_sched_cfs_check_preempt_tick(curr, delta_exec);
+
+		if (ret < 0)
+			return;
+		else if (ret > 0)
+			resched_curr(rq_of(cfs_rq));
+	}
+
+
 	if (delta_exec > ideal_runtime) {
 		resched_curr(rq_of(cfs_rq));
 		/*
@@ -7581,6 +7593,15 @@ wakeup_preempt_entity(struct sched_entity *curr, struct sched_entity *se)
 {
 	s64 gran, vdiff = curr->vruntime - se->vruntime;
 
+
+	if (bpf_sched_enabled()) {
+		int ret = bpf_sched_cfs_wakeup_preempt_entity(curr, se);
+
+		if (ret)
+			return ret;
+	}
+
+
 	if (vdiff <= 0)
 		return -1;
 
@@ -7665,6 +7686,24 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p, int wake_
 	if (unlikely(task_has_idle_policy(curr)) &&
 	    likely(!task_has_idle_policy(p)))
 		goto preempt;
+
+
+
+	if (bpf_sched_enabled()) {
+		/*
+		int ret = bpf_sched_cfs_check_preempt_wakeup(curr, p);
+
+		if (ret < 0)
+			return;
+		else if (ret > 0)
+			goto preempt;
+			*/
+	}
+
+
+
+
+
 
 	/*
 	 * Batch and idle tasks do not preempt non-idle tasks (their preemption
@@ -8899,6 +8938,14 @@ static void update_cpu_capacity(struct sched_domain *sd, int cpu)
 	struct sched_group *sdg = sd->groups;
 	struct rq *rq = cpu_rq(cpu);
 
+	if (bpf_sched_enabled()) {
+                int ret = bpf_sched_cfs_vcpu_capacity();
+
+                if(ret > 0)
+                        capacity = (unsigned long) ret;
+        }
+
+
 	rq->cpu_capacity_orig = capacity_orig;
 
 	if (!capacity)
@@ -8908,6 +8955,7 @@ static void update_cpu_capacity(struct sched_domain *sd, int cpu)
 	if(rq->cpu_capacity_custom > 0) {
                 rq->cpu_capacity = rq->cpu_capacity_custom;
         }
+
 	/*
 	 * Detect if the performance domain is in capacity inversion state.
 	 *
@@ -11092,6 +11140,7 @@ static inline int on_null_domain(struct rq *rq)
  * - HK_TYPE_MISC CPUs are used for this task, because HK_TYPE_SCHED not set
  *   anywhere yet.
  */
+
 
 static int find_new_ilb(void)
 {

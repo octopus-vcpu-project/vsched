@@ -1373,8 +1373,6 @@ done:
 	__cpumask_set_cpu(cpu, cpu_capacity_span(entry));
 }
 
-
-
 /*
  * Build-up/update list of CPUs grouped by their capacities
  * An update requires explicit request to rebuild sched domains
@@ -1701,6 +1699,7 @@ void set_live_topology(struct sched_domain_topology_level *tl)
 	return;
 }
 EXPORT_SYMBOL(set_live_topology);
+
 
 
 
