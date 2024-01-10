@@ -106,7 +106,6 @@ static const char * const attach_type_name[] = {
 	[BPF_TRACE_FEXIT]		= "trace_fexit",
 	[BPF_MODIFY_RETURN]		= "modify_return",
 	[BPF_LSM_MAC]			= "lsm_mac",
-	[BPF_SCHED]			= "sched",
 	[BPF_LSM_CGROUP]		= "lsm_cgroup",
 	[BPF_SK_LOOKUP]			= "sk_lookup",
 	[BPF_TRACE_ITER]		= "trace_iter",
@@ -200,7 +199,6 @@ static const char * const prog_type_name[] = {
 	[BPF_PROG_TYPE_LSM]			= "lsm",
 	[BPF_PROG_TYPE_SK_LOOKUP]		= "sk_lookup",
 	[BPF_PROG_TYPE_SYSCALL]			= "syscall",
-	[BPF_PROG_TYPE_SCHED]			= "sched",
 };
 
 static int __base_pr(enum libbpf_print_level level, const char *format,
@@ -2952,8 +2950,7 @@ static int bpf_object__finalize_btf(struct bpf_object *obj)
 static bool prog_needs_vmlinux_btf(struct bpf_program *prog)
 {
 	if (prog->type == BPF_PROG_TYPE_STRUCT_OPS ||
-		  prog->type == BPF_PROG_TYPE_LSM ||
-	    prog->type == BPF_PROG_TYPE_SCHED)
+	    prog->type == BPF_PROG_TYPE_LSM)
 		return true;
 
 	/* BPF_PROG_TYPE_TRACING programs which do not attach to other programs
@@ -8471,10 +8468,6 @@ static int attach_raw_tp(const struct bpf_program *prog, long cookie, struct bpf
 static int attach_trace(const struct bpf_program *prog, long cookie, struct bpf_link **link);
 static int attach_kprobe_multi(const struct bpf_program *prog, long cookie, struct bpf_link **link);
 static int attach_lsm(const struct bpf_program *prog, long cookie, struct bpf_link **link);
-<<<<<<< HEAD
-=======
-static int attach_sched(const struct bpf_program *prog, long cookie, struct bpf_link **link);
->>>>>>> repo-a/main
 static int attach_iter(const struct bpf_program *prog, long cookie, struct bpf_link **link);
 
 static const struct bpf_sec_def section_defs[] = {
@@ -8509,10 +8502,6 @@ static const struct bpf_sec_def section_defs[] = {
 	SEC_DEF("fmod_ret.s+",		TRACING, BPF_MODIFY_RETURN, SEC_ATTACH_BTF | SEC_SLEEPABLE, attach_trace),
 	SEC_DEF("fexit.s+",		TRACING, BPF_TRACE_FEXIT, SEC_ATTACH_BTF | SEC_SLEEPABLE, attach_trace),
 	SEC_DEF("freplace+",		EXT, 0, SEC_ATTACH_BTF, attach_trace),
-<<<<<<< HEAD
-=======
-	SEC_DEF("sched+",		SCHED, BPF_SCHED, SEC_ATTACH_BTF, attach_sched),
->>>>>>> repo-a/main
 	SEC_DEF("lsm+",			LSM, BPF_LSM_MAC, SEC_ATTACH_BTF, attach_lsm),
 	SEC_DEF("lsm.s+",		LSM, BPF_LSM_MAC, SEC_ATTACH_BTF | SEC_SLEEPABLE, attach_lsm),
 	SEC_DEF("lsm_cgroup+",		LSM, BPF_LSM_CGROUP, SEC_ATTACH_BTF),
@@ -8942,11 +8931,6 @@ static int bpf_object__collect_st_ops_relos(struct bpf_object *obj,
 #define BTF_TRACE_PREFIX "btf_trace_"
 #define BTF_LSM_PREFIX "bpf_lsm_"
 #define BTF_ITER_PREFIX "bpf_iter_"
-<<<<<<< HEAD
-=======
-#define BTF_SCHED_PREFIX "bpf_sched_"
-#define BTF_ITBPF_LSM_MACER_PREFIX "bpf_iter_"
->>>>>>> repo-a/main
 #define BTF_MAX_NAME_SIZE 128
 
 void btf_get_kernel_prefix_kind(enum bpf_attach_type attach_type,
@@ -8962,13 +8946,6 @@ void btf_get_kernel_prefix_kind(enum bpf_attach_type attach_type,
 		*prefix = BTF_LSM_PREFIX;
 		*kind = BTF_KIND_FUNC;
 		break;
-<<<<<<< HEAD
-=======
-	case BPF_SCHED:
-		*prefix = BTF_SCHED_PREFIX;
-		*kind = BTF_KIND_FUNC;
-		break;
->>>>>>> repo-a/main
 	case BPF_TRACE_ITER:
 		*prefix = BTF_ITER_PREFIX;
 		*kind = BTF_KIND_FUNC;
@@ -11260,14 +11237,6 @@ struct bpf_link *bpf_program__attach_lsm(const struct bpf_program *prog)
 	return bpf_program__attach_btf_id(prog, NULL);
 }
 
-<<<<<<< HEAD
-=======
-struct bpf_link *bpf_program__attach_sched(const struct bpf_program *prog)
-{
-	return bpf_program__attach_btf_id(prog, NULL);
-}
-
->>>>>>> repo-a/main
 static int attach_trace(const struct bpf_program *prog, long cookie, struct bpf_link **link)
 {
 	*link = bpf_program__attach_trace(prog);
@@ -11280,15 +11249,6 @@ static int attach_lsm(const struct bpf_program *prog, long cookie, struct bpf_li
 	return libbpf_get_error(*link);
 }
 
-<<<<<<< HEAD
-=======
-static int attach_sched(const struct bpf_program *prog, long cookie, struct bpf_link **link)
-{
-        *link = bpf_program__attach_sched(prog);
-        return libbpf_get_error(*link);
-}
-
->>>>>>> repo-a/main
 static struct bpf_link *
 bpf_program__attach_fd(const struct bpf_program *prog, int target_fd, int btf_id,
 		       const char *target_name)

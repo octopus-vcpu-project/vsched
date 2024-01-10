@@ -93,11 +93,6 @@
 # include "core_sched.c"
 #endif
 
-
-#ifdef CONFIG_BPF_SYSCALL
-# include "bpf_sched.c"
-#endif
-
 #ifdef CONFIG_PSI
 # include "psi.c"
 #endif

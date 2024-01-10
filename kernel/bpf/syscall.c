@@ -35,7 +35,6 @@
 #include <linux/rcupdate_trace.h>
 #include <linux/memcontrol.h>
 #include <linux/trace_events.h>
-#include <linux/bpf_sched.h>
 
 #define IS_FD_ARRAY(map) ((map)->map_type == BPF_MAP_TYPE_PERF_EVENT_ARRAY || \
 			  (map)->map_type == BPF_MAP_TYPE_CGROUP_ARRAY || \
@@ -2327,7 +2326,6 @@ bpf_prog_load_check_attach(enum bpf_prog_type prog_type,
 		case BPF_PROG_TYPE_LSM:
 		case BPF_PROG_TYPE_STRUCT_OPS:
 		case BPF_PROG_TYPE_EXT:
-		case BPF_PROG_TYPE_SCHED:
 			break;
 		default:
 			return -EINVAL;
@@ -2451,7 +2449,6 @@ static bool is_perfmon_prog_type(enum bpf_prog_type prog_type)
 	case BPF_PROG_TYPE_LSM:
 	case BPF_PROG_TYPE_STRUCT_OPS: /* has access to struct sock */
 	case BPF_PROG_TYPE_EXT: /* extends any prog */
-	case BPF_PROG_TYPE_SCHED:
 		return true;
 	default:
 		return false;
@@ -2900,9 +2897,6 @@ static void bpf_tracing_link_release(struct bpf_link *link)
 	struct bpf_tracing_link *tr_link =
 		container_of(link, struct bpf_tracing_link, link.link);
 
-	if (link->prog->type == BPF_PROG_TYPE_SCHED)
-		bpf_sched_dec();
-
 	WARN_ON_ONCE(bpf_trampoline_unlink_prog(&tr_link->link,
 						tr_link->trampoline));
 
@@ -2970,12 +2964,6 @@ static int bpf_tracing_prog_attach(struct bpf_prog *prog,
 		if (prog->expected_attach_type != BPF_TRACE_FENTRY &&
 		    prog->expected_attach_type != BPF_TRACE_FEXIT &&
 		    prog->expected_attach_type != BPF_MODIFY_RETURN) {
-			err = -EINVAL;
-			goto out_put_prog;
-		}
-		break;
-	case BPF_PROG_TYPE_SCHED:
-		if (prog->expected_attach_type != BPF_SCHED) {
 			err = -EINVAL;
 			goto out_put_prog;
 		}
@@ -3052,14 +3040,12 @@ static int bpf_tracing_prog_attach(struct bpf_prog *prog,
 	if (!prog->aux->dst_trampoline && !tgt_prog) {
 		/*
 		 * Allow re-attach for TRACING and LSM programs. If it's
-		 * Allow re-attach for TRACING, SCHED and LSM programs. If it's
 		 * currently linked, bpf_trampoline_link_prog will fail.
 		 * EXT programs need to specify tgt_prog_fd, so they
 		 * re-attach in separate code path.
 		 */
 		if (prog->type != BPF_PROG_TYPE_TRACING &&
-		    prog->type != BPF_PROG_TYPE_LSM &&
-		    prog->type != BPF_PROG_TYPE_SCHED) {
+		    prog->type != BPF_PROG_TYPE_LSM) {
 			err = -EINVAL;
 			goto out_unlock;
 		}
@@ -3107,9 +3093,6 @@ static int bpf_tracing_prog_attach(struct bpf_prog *prog,
 		link = NULL;
 		goto out_unlock;
 	}
-
-	if (prog->type == BPF_PROG_TYPE_SCHED)
-		bpf_sched_inc();
 
 	link->tgt_prog = tgt_prog;
 	link->trampoline = tr;
@@ -3308,7 +3291,6 @@ static int bpf_raw_tp_link_attach(struct bpf_prog *prog,
 	case BPF_PROG_TYPE_TRACING:
 	case BPF_PROG_TYPE_EXT:
 	case BPF_PROG_TYPE_LSM:
-	case BPF_PROG_TYPE_SCHED:
 		if (user_tp_name)
 			/* The attach point for this category of programs
 			 * should be specified via btf_id during program load.
@@ -3469,8 +3451,6 @@ attach_type_to_prog_type(enum bpf_attach_type attach_type)
 		return BPF_PROG_TYPE_XDP;
 	case BPF_LSM_CGROUP:
 		return BPF_PROG_TYPE_LSM;
-	case BPF_SCHED:
-		return BPF_PROG_TYPE_SCHED;
 	default:
 		return BPF_PROG_TYPE_UNSPEC;
 	}
@@ -3567,7 +3547,6 @@ static int bpf_prog_detach(const union bpf_attr *attr)
 	case BPF_PROG_TYPE_CGROUP_SYSCTL:
 	case BPF_PROG_TYPE_SOCK_OPS:
 	case BPF_PROG_TYPE_LSM:
-	case BPF_PROG_TYPE_SCHED:
 		return cgroup_bpf_prog_detach(attr, ptype);
 	default:
 		return -EINVAL;
@@ -4601,7 +4580,6 @@ static int link_create(union bpf_attr *attr, bpfptr_t uattr)
 		break;
 	case BPF_PROG_TYPE_LSM:
 	case BPF_PROG_TYPE_TRACING:
-	case BPF_PROG_TYPE_SCHED:
 		if (attr->link_create.attach_type != prog->expected_attach_type) {
 			ret = -EINVAL;
 			goto out;

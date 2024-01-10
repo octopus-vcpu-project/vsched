@@ -377,5 +377,4 @@ LIBBPF_1.1.0 {
 		user_ring_buffer__reserve;
 		user_ring_buffer__reserve_blocking;
 		user_ring_buffer__submit;
-		bpf_program__attach_sched;
 } LIBBPF_1.0.0;

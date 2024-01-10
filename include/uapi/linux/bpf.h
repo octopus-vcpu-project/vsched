@@ -978,7 +978,6 @@ enum bpf_prog_type {
 	BPF_PROG_TYPE_LSM,
 	BPF_PROG_TYPE_SK_LOOKUP,
 	BPF_PROG_TYPE_SYSCALL, /* a program that can execute syscalls */
-	BPF_PROG_TYPE_SCHED,
 };
 
 enum bpf_attach_type {
@@ -1026,10 +1025,6 @@ enum bpf_attach_type {
 	BPF_PERF_EVENT,
 	BPF_TRACE_KPROBE_MULTI,
 	BPF_LSM_CGROUP,
-<<<<<<< HEAD
-=======
-	BPF_SCHED,
->>>>>>> repo-a/main
 	__MAX_BPF_ATTACH_TYPE
 };
 
@@ -5440,31 +5435,6 @@ union bpf_attr {
  *		**-E2BIG** if user-space has tried to publish a sample which is
  *		larger than the size of the ring buffer, or which cannot fit
  *		within a struct bpf_dynptr.
-<<<<<<< HEAD
-=======
- *
- * u64 bpf_sched_entity_to_tgidpid(struct sched_entity *se)
- *      Description
- *              Return task's encoded tgid and pid if the sched entity is a task.
- *      Return
- *              Tgid and pid encoded as tgid << 32 \| pid, if *se* is a task. (u64)-1 otherwise.
- *
- * u64 bpf_sched_entity_to_cgrpid(struct sched_entity *se)
- *      Description
- *              Return cgroup id if the given sched entity is a cgroup.
- *      Return
- *              Cgroup id, if *se* is a cgroup. (u64)-1 otherwise.
- *
- * long bpf_sched_entity_belongs_to_cgrp(struct sched_entity *se, u64 cgrpid)
- *      Description
- *              Checks whether the sched entity belongs to a cgroup or
- *              it's sub-tree. It doesn't require a cgroup CPU controller
- *              to be enabled.
- *      Return
- *              1 if the sched entity belongs to a cgroup, 0 otherwise.
- *
-
->>>>>>> repo-a/main
  */
 #define __BPF_FUNC_MAPPER(FN)		\
 	FN(unspec),			\
@@ -5677,12 +5647,6 @@ union bpf_attr {
 	FN(tcp_raw_check_syncookie_ipv6),	\
 	FN(ktime_get_tai_ns),		\
 	FN(user_ringbuf_drain),		\
-<<<<<<< HEAD
-=======
-        FN(sched_entity_to_tgidpid),    \
-        FN(sched_entity_to_cgrpid),     \
-        FN(sched_entity_belongs_to_cgrp),       \
->>>>>>> repo-a/main
 	/* */
 
 /* integer value in 'imm' field of BPF_CALL instruction selects which helper
